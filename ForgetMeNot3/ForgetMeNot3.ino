@@ -227,10 +227,10 @@ stateTimer_t stateTimer;
 const word BLOOM_TIME_MS=2000;  
 
 // How long to show the "you are correct" display after a correct changed petal selection
-const word CORRECT_TIME_MS=2000;
+const word CORRECT_TIME_MS=3000;
 
-// How long to display which petal they should have pciked when they pick wrong. 
-const word ANSWER_TIME_MS = 2000;    
+// How long to display which petal they should have picked when they pick wrong. 
+const word ANSWER_TIME_MS = 3000;    
 
 // How long between when we drop into scoreboard display and when we start ticking off levels
 const word SCORE_START_TIME_MS = 500;    
