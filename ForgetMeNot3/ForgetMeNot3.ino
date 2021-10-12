@@ -140,7 +140,7 @@ enum gameState_t {
 
 
   WIN,                  // They beat all the levels!
-                        // Exit on user longpress center to start new game
+                        // Exit on user triple clicks center to start new game
   
   
 };
@@ -340,13 +340,13 @@ void updateStateCenter() {
       
       FOREACH_FACE(f) {
          if ( !isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == READY ) {
-          setColorOnFace( YELLOW , f );
+          setColorOnFace( GREEN , f );
          } else {
           allPetalsReadyFlag = false;
          }
       }
 
-      if (allPetalsReadyFlag && !buttonDown()) {
+      if (allPetalsReadyFlag) {
         gameState=BLOOM;
         stateTimer.set( BLOOM_TIME_MS );                
         setValueSentOnAllFaces( SHOW_BLOOM );    // Get petals ready for next round.        
@@ -539,7 +539,7 @@ void updateStateCenter() {
 
     case WIN: {
       // They deserve a nice rainbox.
-      // Exits when user longpresses a center to start new game
+      // Exits when user triple clicks a center to start new game
 
       showStudio54();
     } return;            
@@ -999,11 +999,11 @@ void loop() {
 
       // Very quick visual indication that we are ready and pointing to center. 
       setColor(OFF);
-      setColorOnFace( YELLOW , centerFace );     
+      setColorOnFace( GREEN , centerFace );     
     }
   }
   
-  if (buttonLongPressed() && doWeHave6Neighboors() ) {
+  if (buttonMultiClicked() && doWeHave6Neighboors() ) {
     // Manual game reset where we have 6 neighboors and user longpresses    
     resetGameBecomeCenter();
     return;
