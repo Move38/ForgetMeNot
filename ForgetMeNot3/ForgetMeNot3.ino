@@ -224,10 +224,10 @@ stateTimer_t stateTimer;
 
 
 // How long to show the bloom animation at the start of each round
-const word BLOOM_TIME_MS=1500;  
+const word BLOOM_TIME_MS=1200;  
 
 // How long to show the "you are correct" display after a correct changed petal selection
-const word CORRECT_TIME_MS=1500;
+const word CORRECT_TIME_MS=1800;
 
 // How long to display which petal they should have picked when they pick wrong. 
 const word ANSWER_TIME_MS = 3000;    
@@ -838,9 +838,9 @@ bool updateStatePetalOnFace(byte f) {
           case SHOW_WRONG_MISSED: stateTimer.set( ANSWER_TIME_MS ); break;
           case SHOW_WRONG_OTHERS: stateTimer.set( ANSWER_TIME_MS ); break;
           case SHOW_SCORE_0: break;
-          case SHOW_SCORE_1: break;
-          case SHOW_SCORE_2: break;
-          case SHOW_SCORE_3: break;
+          case SHOW_SCORE_1: stateTimer.set(SCORE_TICK_TIME_MS); break;
+          case SHOW_SCORE_2: stateTimer.set(SCORE_TICK_TIME_MS); break;
+          case SHOW_SCORE_3: stateTimer.set(SCORE_TICK_TIME_MS); break;
           case SHOW_WIN: break;
       }
     }
@@ -925,9 +925,9 @@ bool updateStatePetalOnFace(byte f) {
         else {
           globalBri = 255 - (5 * (stateTimer.progress() - 204));
         }
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C(2*stateTimer.progress()+192))/255), (centerFace + 2) % 6 );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C(2*stateTimer.progress()+128))/255), (centerFace + 3) % 6 );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C(2*stateTimer.progress()+64))/255), (centerFace + 4) % 6 );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((5*stateTimer.progress()/2)+192))/255), (centerFace + 2) % 6 );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((5*stateTimer.progress()/2)+128))/255), (centerFace + 3) % 6 );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((5*stateTimer.progress()/2)+64))/255), (centerFace + 4) % 6 );
         
         return true;
         }
