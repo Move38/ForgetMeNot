@@ -925,9 +925,9 @@ bool updateStatePetalOnFace(byte f) {
         else {
           globalBri = 255 - (5 * (stateTimer.progress() - 204));
         }
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((5*stateTimer.progress()/2)+192))/255), (centerFace + 2) % 6 );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((5*stateTimer.progress()/2)+128))/255), (centerFace + 3) % 6 );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((5*stateTimer.progress()/2)+64))/255), (centerFace + 4) % 6 );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*stateTimer.progress()/4)+192))/255), nextFaceClockwise( nextFaceClockwise( centerFace )) );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*stateTimer.progress()/4)+128))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace ))) );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*stateTimer.progress()/4)+64))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace )))) );
         
         return true;
         }
