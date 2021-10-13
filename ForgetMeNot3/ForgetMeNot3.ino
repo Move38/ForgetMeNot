@@ -932,11 +932,11 @@ bool updateStatePetalOnFace(byte f) {
         return true;
         }
       case SHOW_WRONG_MISSED:   // Show user they made the wrong choice and this tile was the changed one
-        setColor( GREEN );      // TODO: we can be more creative here! 
+        setColor( dim(GREEN, 255 - stateTimer.progress()) );        // TODO: we can be more creative here!
         return true;
             
       case SHOW_WRONG_OTHERS:   // Show user they made the wrong choice and this tile was the not changed one
-        setColor( RED );        // TODO: we can be more creative here! 
+        setColor( dim(RED, 255 - stateTimer.progress()) );        // TODO: we can be more creative here! 
         return true;
 
       case SHOW_SCORE_0:
