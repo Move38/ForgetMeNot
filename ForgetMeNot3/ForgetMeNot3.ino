@@ -20,7 +20,7 @@ struct level_t {
 // Make PROGMEM if we run out of RAM
 level_t levels[MAX_LEVEL] {
   { COLOR     , 1 , 1  }, // Level  0
-  { COLOR     , 1 , 1  }, // Level  1
+  { DIRECTION     , 1 , 1  }, // Level  1
   { COLOR     , 1 , 1  }, // Level  2
   { COLOR     , 1 , 1  }, // Level  3
   { COLOR     , 2 , 1  }, // Level  4
@@ -671,13 +671,19 @@ struct puzzle_t {
   
   } data;
 
-  byte level;     // We remeber the currentl level we are playing to create an interlock for incrementing to the next level
+  byte currentLevelIndex;     // We remeber the currentl level we are playing to create an interlock for incrementing to the next level
   
-  void set( const level_t &level ) {    // Set the current puzzle
+  void set( byte newLevelIndex ) {    // Set the current puzzle
+
+    currentLevelIndex = newLevelIndex;
+
+    const level_t &level = levels[newLevelIndex];
 
     // Save these, we might need them again
     type = level.type;
     difficulty = level.difficulty; 
+
+    
 
     switch (type) {
       
@@ -911,7 +917,7 @@ bool updateStatePetalOnFace(byte f) {
         // I pick now as a good time to increment the petal to the next level. 
         // We check if the currentLevel variable matches the level of the current puzzle to make sure we only
         // increment once per pass though the sequence. 
-        if (puzzle.level==currentLevel) {
+        if (puzzle.currentLevelIndex==currentLevel) {
           currentLevel++;
         }
 
