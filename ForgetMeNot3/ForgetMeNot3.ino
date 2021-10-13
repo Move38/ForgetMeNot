@@ -865,6 +865,7 @@ bool updateStatePetalOnFace(byte f) {
       case SHOW_BLOOM:          // Show single green pixel pointing to center. Increment level.         
 
         // Note here that we call puzzle.set() repeatedly while the bloom animation is running. This adds some entorpy. 
+        puzzle.level = currentLevel;  // update the puzzle level to the current level
         puzzle.set( levels[currentLevel] ); 
         
         setColor( OFF );
