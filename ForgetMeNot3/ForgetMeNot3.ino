@@ -18,9 +18,17 @@ struct level_t {
 #define MAX_LEVEL 72
 
 // Make PROGMEM if we run out of RAM
+/*
+ * Once the levels get higher up, we should have a sort of random sequence of puzzle types
+ * What could be our source of inspiration for this randomness?!
+ * How about: https://phys.org/news/2018-12-forget-me-not-scientists-memory-mechanism.html
+ * Let's use the genetic sequence and give each one of the puzzle types an A, C, G, T affiliation
+ * Can you find the portion of this games sequence that exists somewhere else in nature :)
+ * Here is a starting point https://www.ncbi.nlm.nih.gov/gene/
+ */
 level_t levels[MAX_LEVEL] {
   { COLOR     , 1 , 1  }, // Level  0
-  { DIRECTION     , 1 , 1  }, // Level  1
+  { COLOR     , 1 , 1  }, // Level  1
   { COLOR     , 1 , 1  }, // Level  2
   { COLOR     , 1 , 1  }, // Level  3
   { COLOR     , 2 , 1  }, // Level  4
@@ -45,52 +53,52 @@ level_t levels[MAX_LEVEL] {
   { ROTATION  , 2 , 1  }, // Level  23
   { COLOR     , 2 , 1  }, // Level  24
   { DIRECTION , 2 , 1  }, // Level  25
-  { DICHROMIC , 2 , 1  }, // Level  26
+  { DIRECTION , 2 , 1  }, // Level  26
   { ROTATION  , 2 , 1  }, // Level  27
   { COLOR     , 2 , 1  }, // Level  28
   { DIRECTION , 2 , 1  }, // Level  29
-  { DICHROMIC , 2 , 1  }, // Level  30
+  { DIRECTION , 2 , 1  }, // Level  30
   { ROTATION  , 2 , 1  }, // Level  31
-  { COLOR     , 2 , 1  }, // Level  32
+  { ROTATION  , 2 , 1  }, // Level  32
   { DIRECTION , 3 , 1  }, // Level  33
-  { DICHROMIC , 3 , 1  }, // Level  34
-  { ROTATION  , 3 , 1  }, // Level  35
-  { COLOR     , 3 , 1  }, // Level  36
-  { DIRECTION , 3 , 1  }, // Level  37
-  { DICHROMIC , 3 , 1  }, // Level  38
-  { ROTATION  , 3 , 1  }, // Level  39
-  { COLOR     , 3 , 1  }, // Level  40
+  { COLOR     , 3 , 1  }, // Level  34
+  { COLOR     , 3 , 1  }, // Level  35
+  { DICHROMIC , 3 , 1  }, // Level  36
+  { ROTATION  , 3 , 1  }, // Level  37
+  { ROTATION  , 3 , 1  }, // Level  38
+  { DIRECTION , 3 , 1  }, // Level  39
+  { ROTATION  , 3 , 1  }, // Level  40
   { DIRECTION , 3 , 1  }, // Level  41
-  { DICHROMIC , 3 , 1  }, // Level  42
-  { ROTATION  , 3 , 1  }, // Level  43
-  { COLOR     , 3 , 1  }, // Level  44
+  { ROTATION  , 3 , 1  }, // Level  42
+  { COLOR     , 3 , 1  }, // Level  43
+  { DICHROMIC , 3 , 1  }, // Level  44
   { DIRECTION , 3 , 1  }, // Level  45
-  { DICHROMIC , 4 , 1  }, // Level  46
-  { ROTATION  , 4 , 1  }, // Level  47
-  { COLOR     , 4 , 1  }, // Level  48
-  { DIRECTION , 4 , 1  }, // Level  49
+  { ROTATION  , 4 , 1  }, // Level  46
+  { COLOR     , 4 , 1  }, // Level  47
+  { DIRECTION , 4 , 1  }, // Level  48
+  { DICHROMIC , 4 , 1  }, // Level  49
   { DICHROMIC , 4 , 1  }, // Level  50
-  { ROTATION  , 4 , 1  }, // Level  51
-  { COLOR     , 4 , 1  }, // Level  52
+  { COLOR     , 4 , 1  }, // Level  51
+  { ROTATION  , 4 , 1  }, // Level  52
   { DIRECTION , 4 , 1  }, // Level  53
-  { DICHROMIC , 4 , 1  }, // Level  54
+  { COLOR     , 4 , 1  }, // Level  54
   { ROTATION  , 4 , 1  }, // Level  55
-  { COLOR     , 4 , 1  }, // Level  56
-  { DIRECTION , 4 , 1  }, // Level  57
+  { DIRECTION , 4 , 1  }, // Level  56
+  { COLOR     , 4 , 1  }, // Level  57
   { DICHROMIC , 4 , 1  }, // Level  58
-  { ROTATION  , 4 , 1  }, // Level  59
+  { COLOR     , 4 , 1  }, // Level  59
   { COLOR     , 4 , 1  }, // Level  60
   { DIRECTION , 4 , 1  }, // Level  61
-  { DICHROMIC , 4 , 1  }, // Level  62
+  { DIRECTION , 4 , 1  }, // Level  62
   { ROTATION  , 4 , 1  }, // Level  63
-  { COLOR     , 4 , 1  }, // Level  64
-  { DIRECTION , 4 , 1  }, // Level  65
-  { DICHROMIC , 4 , 1  }, // Level  66
+  { ROTATION  , 4 , 1  }, // Level  64
+  { ROTATION  , 4 , 1  }, // Level  65
+  { DIRECTION , 4 , 1  }, // Level  66
   { ROTATION  , 4 , 1  }, // Level  67
   { COLOR     , 4 , 1  }, // Level  68
   { DIRECTION , 4 , 1  }, // Level  69
   { DICHROMIC , 4 , 1  }, // Level  70
-  { ROTATION  , 4 , 1  }, // Level  71   
+  { ROTATION  , 4 , 1  }, // Level  71
 };
 
 
