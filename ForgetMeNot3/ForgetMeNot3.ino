@@ -487,8 +487,8 @@ void updateStateCenter() {
         gameState = SCOREBOARD;
         scoreboard_tick_face=0;
         scoreboard_tick_step=0;
-        setColor( scoreboard_cycle_colors[0] );     
         scoreboard_tick_cycle=1;        
+        setColor( scoreboard_cycle_colors[scoreboard_tick_cycle] ); // fill red from the start
         setValueSentOnAllFaces( SHOW_SCORE_0 ); 
         stateTimer.set( SCORE_START_TIME_MS );   
       }
@@ -511,8 +511,9 @@ void updateStateCenter() {
 
           // I think this helps make the score spin animation look nicer?
 
-          setColorOnFace( scoreboard_cycle_colors[scoreboard_tick_cycle] , scoreboard_tick_face );          
-
+          //setColorOnFace( scoreboard_cycle_colors[scoreboard_tick_cycle] , scoreboard_tick_face );          
+          setColor(scoreboard_cycle_colors[scoreboard_tick_cycle]);
+          
           scoreboard_tick_step++;
 
           if (scoreboard_tick_step==3) {
@@ -529,8 +530,9 @@ void updateStateCenter() {
 
           
         } else {
-          // ..and this this lets you know the score is done spinning out. Good? 
-          setColor(BLUE); 
+          // ..and this this lets you know the score is done spinning out
+          // TODO: Animate the current round color fading up and down
+          setColor(dim(scoreboard_cycle_colors[scoreboard_tick_cycle], sin8_C(millis()/8)));
         }
       }
     
@@ -845,6 +847,8 @@ bool updateStatePetalOnFace(byte f) {
       }
     }
 
+    byte progress = stateTimer.progress();      // Used in several places, so grab once here in case we need it. 
+
     switch (messageFromCenter) {
 
       case SHOW_RESET:        // Starts a new game. Show a single yellow pixel pointing to center. 
@@ -925,18 +929,18 @@ bool updateStatePetalOnFace(byte f) {
         else {
           globalBri = 255 - (5 * (stateTimer.progress() - 204));
         }
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*stateTimer.progress()/4)+192))/255), nextFaceClockwise( nextFaceClockwise( centerFace )) );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*stateTimer.progress()/4)+128))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace ))) );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*stateTimer.progress()/4)+64))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace )))) );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+192))/255), nextFaceClockwise( nextFaceClockwise( centerFace )) );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+128))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace ))) );
+        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+64))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace )))) );
         
         return true;
         }
       case SHOW_WRONG_MISSED:   // Show user they made the wrong choice and this tile was the changed one
-        setColor( dim(GREEN, 255 - stateTimer.progress()) );        // TODO: we can be more creative here!
+        setColor( dim(GREEN, 255 - progress) );        // TODO: we can be more creative here!
         return true;
             
       case SHOW_WRONG_OTHERS:   // Show user they made the wrong choice and this tile was the not changed one
-        setColor( dim(RED, 255 - stateTimer.progress()) );        // TODO: we can be more creative here! 
+        setColor( dim(RED, 255 - progress) );        // TODO: we can be more creative here! 
         return true;
 
       case SHOW_SCORE_0:
