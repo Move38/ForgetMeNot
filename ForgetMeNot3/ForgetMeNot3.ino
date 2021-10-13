@@ -533,6 +533,11 @@ void updateStateCenter() {
           // ..and this this lets you know the score is done spinning out
           // TODO: Animate the current round color fading up and down
           setColor(dim(scoreboard_cycle_colors[scoreboard_tick_cycle], sin8_C(millis()/8)));
+          
+          // listen for an reset with a single button pressed
+          if(buttonPressed()) {
+            resetGameBecomeCenter();
+          }
         }
       }
     
