@@ -376,6 +376,10 @@ void updateStateCenter() {
             stateTimer.set( getShowDuration(currentLevel) );       
             } 
         }
+      } else {
+        // We are paused, so consume any button press so it does not linger until the end of the pause
+        // TODO: I think this is correct behaivor?
+        buttonPressed();
       }
       
 
