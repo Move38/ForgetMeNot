@@ -299,17 +299,6 @@ boolean doWeHave6Neighboors() {
   return true;
 }
 
-// Return true if all facea are currently getting specified message
-
-boolean checkAll6FacesGetting( byte message ) {
-
-  FOREACH_FACE(f) {
-    if (isValueReceivedOnFaceExpired(f) || getLastValueReceivedOnFace( f) != message ) {
-      return false;
-    }
-  }
-  return true;
-}
 
 void showWinAnimation() {
   
@@ -361,25 +350,34 @@ void updateStateCenter() {
     } return;
 
     case BLOOM: {
+      
       // Durring bloom animation we change color from GREEN to YELLOW. Ends with YELLOW after timer expires.
       byte hue = ( ( YELLOW_HUE * progress ) + ( GREEN_HUE * (255-progress)) ) / 255;
       setColor( makeColorHSB(  hue , 255 , 255 ) );
 
-      // increase the sparkle over time
-      setColorOnFace( makeColorHSB(hue, 255-progress, 255), random(FACE_COUNT-1) );
+      // Here we implement "pause" mode. If the user removes one of the 6 petals durring bloom, 
+      // the cneter displays just yellow (no sparkle) and the user can not start the round with 
+      // a button press until the 6th petal is replaced
+      
+      if ( doWeHave6Neighboors() ) {
 
-      if (progress==255) {
-       
-        if (buttonPressed()) {
-          // Pressing the button now will start the round and show the puzzle on the petals. 
-          // Note that the petals decide what to show since they know what level we are on
-          setColor(YELLOW);   // Clear the sparkle
-          setValueSentOnAllFaces( SHOW_PUZZLE );    
-
-          gameState=PUZZLE;
-          stateTimer.set( getShowDuration(currentLevel) );       
-          } 
+        // increase the sparkle over time
+        setColorOnFace( makeColorHSB(hue, 255-progress, 255), random(FACE_COUNT-1) );
+  
+        if (progress==255) {
+         
+          if (buttonPressed()) {
+            // Pressing the button now will start the round and show the puzzle on the petals. 
+            // Note that the petals decide what to show since they know what level we are on
+            setColor(YELLOW);   // Clear the sparkle
+            setValueSentOnAllFaces( SHOW_PUZZLE );    
+  
+            gameState=PUZZLE;
+            stateTimer.set( getShowDuration(currentLevel) );       
+            } 
+        }
       }
+      
 
     } return;
       
