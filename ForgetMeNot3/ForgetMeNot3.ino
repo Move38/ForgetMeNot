@@ -834,16 +834,21 @@ byte messageFromCenter_prev;
 
 bool updateStatePetalOnFace(byte f) {
 
-  if (!isValueReceivedOnFaceExpired(f)) {    
+  if (!isValueReceivedOnFaceExpired(f)) { 
+       
     byte messageFromCenter = getLastValueReceivedOnFace(f);
 
+    bool messageFromCenterChangeFlag=false;
+
     if( messageFromCenter != messageFromCenter_prev ) {
+
+      messageFromCenterChangeFlag=true;
       
       messageFromCenter_prev = messageFromCenter; // only do this once on change
-      
+
+      /*
       switch (messageFromCenter) {
           case SHOW_RESET: break;
-          case SHOW_BLOOM: stateTimer.set( BLOOM_TIME_MS ); break;
           case SHOW_PUZZLE: break;
           case SHOW_HIDE: break;
           case SHOW_CHANGED: break;
@@ -857,6 +862,7 @@ bool updateStatePetalOnFace(byte f) {
           case SHOW_SCORE_3: stateTimer.set(SCORE_TICK_TIME_MS); break;
           case SHOW_WIN: break;
       }
+      */
     }
 
     byte progress = stateTimer.progress();      // Used in several places, so grab once here in case we need it. 
@@ -873,9 +879,15 @@ bool updateStatePetalOnFace(byte f) {
 
         // Note here that we call puzzle.set() repeatedly while the bloom animation is running. This adds some entorpy. 
         puzzle.set( currentLevel ); 
-        
-        setColor( OFF );
-        setColorOnFace( GREEN , f );
+
+        if ( messageFromCenterChangeFlag ) {
+          stateTimer.set( BLOOM_TIME_MS );
+        }
+
+        // Whole tile fades from green to off...
+        setColor( dim(GREEN, 255 - progress)  );
+        // except pixel pointing towards the center which stays green
+        setColorOnFace( GREEN  , f );
         return true;
 
       case SHOW_PUZZLE:        // Show the current puzzle on our pixels
@@ -988,6 +1000,8 @@ bool updateStatePetalOnFace(byte f) {
 
 bool updateStatePetal() {
 
+  // First check if we are still connected to a center on the expected face
+
   if (updateStatePetalOnFace(centerFace)) {
     // We found our expected center
     return false;
@@ -1009,16 +1023,6 @@ bool updateStatePetal() {
   }
 
   // if we get here then we have no center connected at the moment
-
-  // we check for a special case where we have 6 neighboors (which we now know are all also petals)
-  // and if we do then we will become center and start a game. This covers the situaltion right after a 
-  // download where there no game has ever been started and the user puts the 7 tiles together, in which 
-  // case the game starts automatically. 
-
-  if (doWeHave6Neighboors()) {
-    // Auto game start
-    return true;
-  }
 
   // If we do not have a center then show green 
   // TODO: I think maybe a rotating animation better here? 
