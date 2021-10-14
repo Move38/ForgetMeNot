@@ -1057,14 +1057,14 @@ void loop() {
       currentLevel=0;      
       scoreboard_cycle=0;   
       scoreboard_count_prev=0;
-
-      // Very quick visual indication that we are ready and pointing to center. 
-      setColor(OFF);
-      setColorOnFace( GREEN , centerFace );     
     }
   }
+
+  // Reset game with us as center if...
+  // We are already center and the user tripple clicks (game restart)
+  // We are not center but we found ourselves with 6 neighboors (autostart)
   
-  if (buttonMultiClicked() && doWeHave6Neighboors() ) {
+  if ( (buttonMultiClicked() || !weAreCenter) && doWeHave6Neighboors() ) {
     // Manual game reset where we have 6 neighboors and user longpresses    
     resetGameBecomeCenter();
     return;
@@ -1075,11 +1075,7 @@ void loop() {
   if (weAreCenter) {
     updateStateCenter();
   } else {
-    if (updateStatePetal()) {
-      // auto game reset when we are a petal and we are surrounded by 6 petals
-      resetGameBecomeCenter();
-      return;
-    }
+    updateStatePetal();
   }
   
 }
