@@ -657,6 +657,9 @@ void swap( byte &a , byte &b ) {
 }
 
 const byte ROTATION_MS_PER_STEP = 50;   // 50ms per step * 6 steps per rotation = 300ms per rotation = ~3 rotations per second
+byte rotationBri[6] = {0, 0, 0, 0, 0, 0};
+byte rotationFace = 0;
+Timer rotationTimer;
  
 struct puzzle_t {
 
@@ -775,16 +778,35 @@ struct puzzle_t {
         // TODO: maybe sync/unsync or varry speed based on difficulty
 
         // TODO: This will be huge code size, replace if we run out of room. 
-        byte rotationFace = (millis() / ROTATION_MS_PER_STEP) % FACE_COUNT;
 
-        if (changed ^ data.rotation.clockwise) {      // This is a bit tricky, but see why it works? (Remember that ^ is XOR so true if either input true, but not both)
-          // Revese direction
-          rotationFace = FACE_COUNT - 1 - rotationFace;
+        if (rotationTimer.isExpired()) {
+          
+          rotationTimer.set(ROTATION_MS_PER_STEP);
+          
+          if (changed ^ data.rotation.clockwise) { // CW Rotation
+          
+            rotationFace = nextFaceClockwise(rotationFace);
+          
+          } else {  // CCW Rotation
+            
+            if(rotationFace == 0) {
+              rotationFace = 5;
+            }
+            else {
+              rotationFace--;
+            }
+          }
+          
+          rotationBri[rotationFace] = 255;
         }
 
-        // TODO: add the fade down on the rotation
-        setColor( OFF );
-        setColorOnFace( WHITE , rotationFace );     
+        FOREACH_FACE(f) {
+          if ( rotationBri[f] >= 10 ) {
+            rotationBri[f] -= 10;
+          }
+          setColorOnFace(dim(WHITE, rotationBri[f]), f);
+        }
+
       } break;
       
     }    
