@@ -361,23 +361,21 @@ void updateStateCenter() {
       
       if ( doWeHave6Neighboors() ) {
 
-        // increase the sparkle over time
-        setColorOnFace( makeColorHSB(hue, 255-progress, 255), random(FACE_COUNT-1) );
+       if (buttonPressed()) {
+          // Pressing the button now will start the round and show the puzzle on the petals. 
+          // Note that the petals decide what to show since they know what level we are on
+          setColor(YELLOW);   // Clear the sparkle
+          setValueSentOnAllFaces( SHOW_PUZZLE );    
 
-        // TODO: Is this right? Shouldn't the user be able to start the game before the bloom animation is complete? If not, then probably should consume any presses that happen durring the animation. 
-  
-        if (progress==255) {
-         
-          if (buttonPressed()) {
-            // Pressing the button now will start the round and show the puzzle on the petals. 
-            // Note that the petals decide what to show since they know what level we are on
-            setColor(YELLOW);   // Clear the sparkle
-            setValueSentOnAllFaces( SHOW_PUZZLE );    
-  
-            gameState=PUZZLE;
-            stateTimer.set( getShowDuration(currentLevel) );       
-            } 
+          gameState=PUZZLE;
+          stateTimer.set( getShowDuration(currentLevel) );       
+        } else {
+
+          // increase the sparkle over time
+          setColorOnFace( makeColorHSB(hue, 255-progress, 255), random(FACE_COUNT-1) );
+
         }
+        
       } else {
         // We are paused, so consume any button press so it does not linger until the end of the pause
         // TODO: I think this is correct behaivor?
