@@ -845,24 +845,7 @@ bool updateStatePetalOnFace(byte f) {
       messageFromCenterChangeFlag=true;
       
       messageFromCenter_prev = messageFromCenter; // only do this once on change
-
-      /*
-      switch (messageFromCenter) {
-          case SHOW_RESET: break;
-          case SHOW_PUZZLE: break;
-          case SHOW_HIDE: break;
-          case SHOW_CHANGED: break;
-          case SHOW_UNCHANGED: break;
-          case SHOW_CORRECT: stateTimer.set( CORRECT_TIME_MS ); break;
-          case SHOW_WRONG_MISSED: stateTimer.set( ANSWER_TIME_MS ); break;
-          case SHOW_WRONG_OTHERS: stateTimer.set( ANSWER_TIME_MS ); break;
-          case SHOW_SCORE_0: break;
-          case SHOW_SCORE_1: stateTimer.set(SCORE_TICK_TIME_MS); break;
-          case SHOW_SCORE_2: stateTimer.set(SCORE_TICK_TIME_MS); break;
-          case SHOW_SCORE_3: stateTimer.set(SCORE_TICK_TIME_MS); break;
-          case SHOW_WIN: break;
-      }
-      */
+           
     }
 
     byte progress = stateTimer.progress();      // Used in several places, so grab once here in case we need it. 
@@ -871,7 +854,9 @@ bool updateStatePetalOnFace(byte f) {
 
       case SHOW_RESET:        // Starts a new game. Show a single yellow pixel pointing to center. 
       
-        // The reset logic is special cased in loop() sicne it changes global state.        
+        // Note there is logic that is special cased in loop() since it changes global state.        
+
+        setColor( GREEN );    // TODO: Is this right? Smooth visual transition into bloom which should come next.
         return true;
 
       
@@ -881,6 +866,7 @@ bool updateStatePetalOnFace(byte f) {
         puzzle.set( currentLevel ); 
 
         if ( messageFromCenterChangeFlag ) {
+          // New display, start animation           
           stateTimer.set( BLOOM_TIME_MS );
         }
 
@@ -933,25 +919,27 @@ bool updateStatePetalOnFace(byte f) {
           currentLevel++;
         }
 
+        if ( messageFromCenterChangeFlag ) {
+          // New display, start animation 
+          stateTimer.set( CORRECT_TIME_MS );
+        }
+
         // They got it right, lets celebrate!
         // Show Green and fade down the outside to only leave the center illuminated
         // TODO: Make this much more efficient
         // This celebration looks pretty nice, could use a little fine tuning, but can also be implemented in a more space efficent way
-        FOREACH_FACE(f) {
-          if( f == centerFace ) {
-            setColorOnFace(GREEN, f);
-          }
-          else {
-            setColorOnFace(dim(GREEN, 255 - stateTimer.progress()), f);            
-          }
-        }
+
+
+        setColor(dim(GREEN, 255 - progress) ); 
+        setColorOnFace(GREEN,  centerFace );
+
         // on the exterior, create a rotation animation
         byte globalBri;
-        if(stateTimer.progress() < 204) {
+        if (progress < 204) {
           globalBri = 255;
         }
         else {
-          globalBri = 255 - (5 * (stateTimer.progress() - 204));
+          globalBri = 255 - (5 * ( progress  - 204));
         }
         setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+192))/255), nextFaceClockwise( nextFaceClockwise( centerFace )) );
         setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+128))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace ))) );
@@ -959,23 +947,36 @@ bool updateStatePetalOnFace(byte f) {
         
         return true;
         }
+        
       case SHOW_WRONG_MISSED:   // Show user they made the wrong choice and this tile was the changed one
-        setColor( dim(GREEN, 255 - progress) );        // TODO: we can be more creative here!
+
+        if ( messageFromCenterChangeFlag ) {
+          // New display, start animation 
+          stateTimer.set( ANSWER_TIME_MS );
+        }
+      
+        setColor( dim(GREEN, progress) );        // TODO: we can be more creative here!
         return true;
             
       case SHOW_WRONG_OTHERS:   // Show user they made the wrong choice and this tile was the not changed one
-        setColor( dim(RED, 255 - progress) );        // TODO: we can be more creative here! 
+
+        if ( messageFromCenterChangeFlag ) {
+          // New display, start animation 
+          stateTimer.set( ANSWER_TIME_MS );
+        }
+              
+        setColor( dim(RED, progress) );        // TODO: we can be more creative here! 
         return true;
 
       case SHOW_SCORE_0:
         showScore( f , 0 );
         return true; 
 
-      case SHOW_SCORE_1:
+      case SHOW_SCORE_1:  
         showScore( f , 1 );
         return true; 
 
-      case SHOW_SCORE_2:
+      case SHOW_SCORE_2:   
         showScore( f , 2 );
         return true; 
 
