@@ -363,6 +363,8 @@ void updateStateCenter() {
 
         // increase the sparkle over time
         setColorOnFace( makeColorHSB(hue, 255-progress, 255), random(FACE_COUNT-1) );
+
+        // TODO: Is this right? Shouldn't the user be able to start the game before the bloom animation is complete? If not, then probably should consume any presses that happen durring the animation. 
   
         if (progress==255) {
          
