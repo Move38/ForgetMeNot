@@ -911,7 +911,6 @@ bool updateStatePetalOnFace(byte f) {
         
 
       case SHOW_CORRECT:             // Indicate to the user they picked the right peice
-        {
         // I pick now as a good time to increment the petal to the next level. 
         // We check if the currentLevel variable matches the level of the current puzzle to make sure we only
         // increment once per pass though the sequence. 
@@ -946,14 +945,9 @@ bool updateStatePetalOnFace(byte f) {
         setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+64))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace )))) );
         
         return true;
-        }
+
         
       case SHOW_WRONG_MISSED:   // Show user they made the wrong choice and this tile was the changed one
-
-        if ( messageFromCenterChangeFlag ) {
-          // New display, start animation 
-          stateTimer.set( ANSWER_TIME_MS );
-        }
       
         setColor( dim(GREEN, progress) );        // TODO: we can be more creative here!
         return true;
@@ -965,7 +959,7 @@ bool updateStatePetalOnFace(byte f) {
           stateTimer.set( ANSWER_TIME_MS );
         }
               
-        setColor( dim(RED, progress) );        // TODO: we can be more creative here! 
+        setColor( dim(RED, 255 - progress) );        // TODO: we can be more creative here! 
         return true;
 
       case SHOW_SCORE_0:
