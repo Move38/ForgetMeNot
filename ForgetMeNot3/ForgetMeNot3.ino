@@ -20,7 +20,7 @@ struct level_t {
 // Make PROGMEM if we run out of RAM
 level_t levels[MAX_LEVEL] {
   { COLOR     , 1 , 1  }, // Level  0
-  { DIRECTION     , 1 , 1  }, // Level  1
+  { COLOR     , 1 , 1  }, // Level  1
   { COLOR     , 1 , 1  }, // Level  2
   { COLOR     , 1 , 1  }, // Level  3
   { COLOR     , 2 , 1  }, // Level  4
@@ -108,8 +108,6 @@ enum gameState_t {
                         // Center animate green to yellow, petals animate full green to just one green pixel facing center
                         // Exit on button press on center
 
-  PAUSE,                // Game paused. Happens when one or more petals are removed.                         
-                        
   PUZZLE,               // Show the puzzle
                         // Exit at end of timeout
   
@@ -177,10 +175,9 @@ enum messages_t {
 
   // Sent by Petals
 
-  READY,                 // Ready to start a new game
-
-  IDLE,                  // Sent by default
-  PRESSED,               // Button pressed since last transition. Cleared whenever the petal gets a new message from center.
+  SIGNAL_READY,                 // Ready to start a new game
+  SIGNAL_IDLE,                  // Sent by default
+  SIGNAL_PRESSED,               // Button pressed since last transition. Cleared whenever the petal gets a new message from center.
   
 };
 
@@ -243,7 +240,7 @@ void setup() {
   // Default display at power up
   // TODO: Do we want to also start here after waking from sleep?
   setColor( GREEN );
-  setValueSentOnAllFaces( IDLE );
+  setValueSentOnAllFaces( SIGNAL_IDLE );
 }
 
 
@@ -334,7 +331,7 @@ void updateStateCenter() {
       bool allPetalsReadyFlag = true;
       
       FOREACH_FACE(f) {
-         if ( !isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == READY ) {
+         if ( !isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == SIGNAL_READY ) {
           setColorOnFace( GREEN , f );
          } else {
           allPetalsReadyFlag = false;
@@ -378,7 +375,6 @@ void updateStateCenter() {
         
       } else {
         // We are paused, so consume any button press so it does not linger until the end of the pause
-        // TODO: I think this is correct behaivor?
         buttonPressed();
       }
       
@@ -412,7 +408,7 @@ void updateStateCenter() {
       
       if (progress==255) {   // Done with HIDE?
 
-        // Only now, at the very last second do we actually pick which petal changed. Seems wrong, right?
+        // Only now, at the very last second do we actually pick which petal changed. Seems morally wrong, right?
         changedPetal = random( FACE_COUNT- 1) ;
 
         // Have the petals display either the orginal or changed version of thier puzzle
@@ -431,11 +427,11 @@ void updateStateCenter() {
 
    case CHANGED: {
       // User is looking at the puzzle with a single petal changed.
-      // This state ends when the press one of the tiles. There is no timeout. 
+      // This state ends with the press one of the tiles. There is no timeout. 
       
       // scan though all petals and see if any buttons have been pressed                                  
       FOREACH_FACE(f) {
-        if (!isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f)==PRESSED ) {
+        if (!isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f)==SIGNAL_PRESSED ) {
           // This petal had its button pressed
           if (f==changedPetal) {
             // They picked the right petal!
@@ -450,7 +446,7 @@ void updateStateCenter() {
             setValueSentOnFace( SHOW_WRONG_MISSED , changedPetal );     // Show them the one they _should_ have pressed. 
             gameState=ANSWER; 
             stateTimer.set( ANSWER_TIME_MS );
-            setColor(RED);                          // I like RED here better than YELLOW, don't you? 
+            setColor(RED);                          
           }          
         }          
       }
@@ -458,9 +454,8 @@ void updateStateCenter() {
 
     case CORRECT: {
     
-      // They got it right, I think they deserve little excitment (right now, they are just getting green :)
-      setColor( GREEN ); 
-
+      // They got it right, user is watching a little "horray" animation on the petals with solid green in the center
+      
       if (progress == 255) {
         // Ready for next round.
         currentLevel+=1;
@@ -484,7 +479,6 @@ void updateStateCenter() {
 
     case ANSWER: {
       // Wait for them to see the answer they should have picked.
-      // TODO: Maybe some animation here? 
 
       if (progress==255) {
         gameState = SCOREBOARD;
@@ -495,6 +489,7 @@ void updateStateCenter() {
         setValueSentOnAllFaces( SHOW_SCORE_0 ); 
         stateTimer.set( SCORE_START_TIME_MS );   
       }
+      
     } return;
 
 
@@ -829,7 +824,7 @@ byte centerFace;
 
 // The last value we received from the center
 // This defaults to 0, which is OK, since reset doesn't have any time based needs
-byte messageFromCenter_prev;
+byte messageFromCenter_prev = SHOW_PAUSE;   // Default is to show full green
 
 // Update the petal based on message received from a center on face f
 // return true if there was a center on the face, false if nothing or a petal on that face
@@ -850,15 +845,17 @@ bool updateStatePetalOnFace(byte f) {
            
     }
 
-    byte progress = stateTimer.progress();      // Used in several places, so grab once here in case we need it. 
 
     switch (messageFromCenter) {
 
-      case SHOW_RESET:        // Starts a new game. Show a single yellow pixel pointing to center. 
+      case SHOW_RESET:        // Starts a new game. 
       
         // Note there is logic that is special cased in loop() since it changes global state.        
 
-        setColor( GREEN );    // TODO: Is this right? Smooth visual transition into bloom which should come next.
+        // The center does not transition from RESET to BLOOM until it sees that all petals are READY, so we set our color
+        // to GREEN here seince we don't know how long we might have to wait. 
+        setColor( GREEN );    // Smooth visual transition into bloom which should come next.
+        
         return true;
 
       
@@ -871,9 +868,9 @@ bool updateStatePetalOnFace(byte f) {
           // New display, start animation           
           stateTimer.set( BLOOM_TIME_MS );
         }
-
+        
         // Whole tile fades from green to off...
-        setColor( dim(GREEN, 255 - progress)  );
+        setColor( dim(GREEN, 255 - stateTimer.progress())  );
         // except pixel pointing towards the center which stays green
         setColorOnFace( GREEN  , f );
         return true;
@@ -886,8 +883,9 @@ bool updateStatePetalOnFace(byte f) {
         setColor(OFF);        // This is an editorial decision. I like it all going dark here. 
 
         // Clear any pending button press to get ready for SHOW_CHANGED when user can press button
+        // (Clears a SIGNAL_PRESSED if this petal was pressed in last round)
         buttonPressed();    
-        setValueSentOnAllFaces( IDLE ); 
+        setValueSentOnAllFaces( SIGNAL_IDLE ); 
                 
         return true;
         
@@ -895,7 +893,7 @@ bool updateStatePetalOnFace(byte f) {
         puzzle.show( f , true );     // Show a current puzzle, changed
 
         if (buttonPressed()) {
-          setValueSentOnFace( PRESSED , f  );     // We use the petals's sticky value sent to hold the pressed button state
+          setValueSentOnFace( SIGNAL_PRESSED , f  );     // We use the petals's sticky value sent to hold the pressed button state
         }        
         return true;
 
@@ -903,7 +901,7 @@ bool updateStatePetalOnFace(byte f) {
         puzzle.show( f , false );   // Show a current puzzle, unchanged
 
         if (buttonPressed()) {
-          setValueSentOnFace( PRESSED , f  );     // We use the petals's sticky value sent to hold the pressed button state
+          setValueSentOnFace( SIGNAL_PRESSED , f  );     // We use the petals's sticky value sent to hold the pressed button state
         }     
 
         return true;
@@ -930,28 +928,39 @@ bool updateStatePetalOnFace(byte f) {
         // TODO: Make this much more efficient
         // This celebration looks pretty nice, could use a little fine tuning, but can also be implemented in a more space efficent way
 
+        {
 
-        setColor(dim(GREEN, 255 - progress) ); 
-        setColorOnFace(GREEN,  centerFace );
+          // We need a local block here to control scoping of `progress`
 
-        // on the exterior, create a rotation animation
-        byte globalBri;
-        if (progress < 204) {
-          globalBri = 255;
+          byte progress = stateTimer.progress();      
+  
+          setColor(dim(GREEN, 255 - progress) ); 
+          setColorOnFace(GREEN,  centerFace );
+  
+          // on the exterior, create a rotation animation
+          byte globalBri;
+          if (progress < 204) {
+            globalBri = 255;
+          }
+          else {
+            globalBri = 255 - (5 * ( progress  - 204));
+          }
+          setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+192))/255), nextFaceClockwise( nextFaceClockwise( centerFace )) );
+          setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+128))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace ))) );
+          setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+64))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace )))) );
         }
-        else {
-          globalBri = 255 - (5 * ( progress  - 204));
-        }
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+192))/255), nextFaceClockwise( nextFaceClockwise( centerFace )) );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+128))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace ))) );
-        setColorOnFace( dim(GREEN, (globalBri * sin8_C((9*progress/4)+64))/255), nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( nextFaceClockwise( centerFace )))) );
-        
+                
         return true;
 
         
       case SHOW_WRONG_MISSED:   // Show user they made the wrong choice and this tile was the changed one
       
-        setColor( dim(GREEN, progress) );        // TODO: we can be more creative here!
+        if ( messageFromCenterChangeFlag ) {
+          // New display, start animation 
+          stateTimer.set( ANSWER_TIME_MS );
+        }
+
+        setColor( dim(GREEN, stateTimer.progress()) );  
         return true;
             
       case SHOW_WRONG_OTHERS:   // Show user they made the wrong choice and this tile was the not changed one
@@ -960,8 +969,8 @@ bool updateStatePetalOnFace(byte f) {
           // New display, start animation 
           stateTimer.set( ANSWER_TIME_MS );
         }
-              
-        setColor( dim(RED, 255 - progress) );        // TODO: we can be more creative here! 
+
+        setColor( dim(RED, 255 - stateTimer.progress()) );    
         return true;
 
       case SHOW_SCORE_0:
@@ -1021,9 +1030,9 @@ bool updateStatePetal() {
 
   // if we get here then we have no center connected at the moment
 
-  // If we do not have a center then show green 
-  // TODO: I think maybe a rotating animation better here? 
+  // If we do not have a center then show plain green 
   setColor( GREEN );
+  messageFromCenter_prev = SHOW_PAUSE;    // So we will be fresh when we reconnect
 
   return false;
 }
@@ -1052,9 +1061,9 @@ void loop() {
     if ( !isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == SHOW_RESET) {
       // Reset game as petal. Note this will be repeated as long as RESET is in process, but it is idempotent 
       weAreCenter=false;
-      setValueSentOnAllFaces(IDLE);
+      setValueSentOnAllFaces(SIGNAL_IDLE);
       centerFace=f;
-      setValueSentOnFace( READY , centerFace );      
+      setValueSentOnFace( SIGNAL_READY , centerFace );      
       currentLevel=0;      
       scoreboard_cycle=0;   
       scoreboard_count_prev=0;
