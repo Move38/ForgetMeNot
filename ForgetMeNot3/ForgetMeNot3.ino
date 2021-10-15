@@ -302,7 +302,6 @@ void showWinAnimation() {
     setColor( GREEN ); 
     // They got it right, I think they deserve little excitment with some fading sparkles
     setColorOnFace( WHITE , random( FACE_COUNT -1 ) );
-
     //uint32_t m = millis(); 
     //setColor( makeColorHSB( ( m >> 6 ) & 0xff , 0xff , m & 0xff ) );     // TODO: After 72 levels, we owe them better than this crappy rainbow. 
 }
@@ -359,6 +358,7 @@ void updateStateCenter() {
       if ( doWeHave6Neighboors() ) {
 
        if (buttonPressed()) {
+         
           // Pressing the button now will start the round and show the puzzle on the petals. 
           // Note that the petals decide what to show since they know what level we are on
           setColor(YELLOW);   // Clear the sparkle
@@ -862,12 +862,14 @@ bool updateStatePetalOnFace(byte f) {
       case SHOW_BLOOM:          // Show single green pixel pointing to center. Increment level.         
 
         // Note here that we call puzzle.set() repeatedly while the bloom animation is running. This adds some entorpy. 
+
         puzzle.set( currentLevel ); 
 
         if ( messageFromCenterChangeFlag ) {
           // New display, start animation           
           stateTimer.set( BLOOM_TIME_MS );
         }
+
         
         // Whole tile fades from green to off...
         setColor( dim(GREEN, 255 - stateTimer.progress())  );
@@ -911,6 +913,7 @@ bool updateStatePetalOnFace(byte f) {
         
 
       case SHOW_CORRECT:             // Indicate to the user they picked the right peice
+        
         // I pick now as a good time to increment the petal to the next level. 
         // We check if the currentLevel variable matches the level of the current puzzle to make sure we only
         // increment once per pass though the sequence. 
