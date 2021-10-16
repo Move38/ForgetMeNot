@@ -540,7 +540,7 @@ void updateStateCenter() {
           }
 
           stateTimer.set( SCORE_TICK_TIME_MS );
-
+          buttonPressed();    // Clear any pending button presses so we can detect the press when the piece returns
 
         } else {
           // ..and this this lets you know the score is done spinning out
