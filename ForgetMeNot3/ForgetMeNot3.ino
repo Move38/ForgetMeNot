@@ -1010,7 +1010,7 @@ bool updateStatePetalOnFace(byte f) {
           stateTimer.set( ANSWER_TIME_MS );
         }
 
-        setColor( dim(GREEN, stateTimer.progress()) );
+        setColor( dim(GREEN, 255 - stateTimer.progress()) );
         return true;
 
       case SHOW_WRONG_OTHERS:   // Show user they made the wrong choice and this tile was the not changed one
