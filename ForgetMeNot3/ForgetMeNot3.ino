@@ -569,11 +569,11 @@ void updateStateCenter() {
 #define PETAL_COLOR_COUNT 6
 
 Color petalColors[] = {
-  makeColorHSB( 30,200,255),  // SALMON
+  makeColorHSB( 20,190,255),  // SALMON
   makeColorHSB(255,200,255),  // PINK
-  makeColorHSB(220,200,255),  // LIGHT PINK
-  makeColorHSB(180,200,255),  // VIOLET
-  makeColorHSB(150,200,255),  // INDIGO
+  makeColorHSB(220,200,255),  // PURPLE/PINK
+  makeColorRGB(100,  0,255),  // BLUE/VIOLET (note: this color in RGB)
+  makeColorRGB(100,200,255),  // LIGHT CYAN (note: this color in RGB)
   makeColorHSB(120, 50,255),  // PERIWINKLE/WHITE
   BLUE
 };
