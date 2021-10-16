@@ -546,7 +546,7 @@ void updateStateCenter() {
           // ..and this this lets you know the score is done spinning out
           // TODO: Animate the current round color fading up and down
           uint32_t offsetTimePassed = millis() - ( timeOfStartScoreBoard + (maxLevelReached * SCORE_TICK_TIME_MS));
-          setColor(dim(scoreboard_cycle_colors[scoreboard_tick_cycle], sin8_C(millis()/8)));
+          setColor(dim(scoreboard_cycle_colors[scoreboard_tick_cycle], sin8_C(offsetTimePassed/8)));
 
           // listen for an reset with a single button pressed
           if(buttonPressed()) {
