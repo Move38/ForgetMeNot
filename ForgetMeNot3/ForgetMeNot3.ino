@@ -17,6 +17,9 @@ struct level_t {
 
 #define MAX_LEVEL 72
 
+// Number of Wins (beat 72 levels, you deserve a new way to play the next 72 :)
+byte winCount = 0;
+
 // Make PROGMEM if we run out of RAM
 /*
  * Once the levels get higher up, we should have a sort of random sequence of puzzle types
@@ -164,7 +167,8 @@ enum messages_t {
 
   // Sent by Center
 
-  SHOW_RESET,         // Show single yellow pixel pointing to center. Reset level to 0.
+  SHOW_RESET,         // Show single yellow pixel pointing to center. Reset level to 0. Win Count 0.
+  SHOW_RESET_SPECIAL, // Show single yellow pixel pointing to center. Reset level to 0. Win Count 1.
   SHOW_BLOOM,         // Show single green pixel pointing to center. Increment level.
   SHOW_PAUSE,         // Show full green. Also shown on a petal with no center. There is an anmiation transition from this to SHOW_BLOOM.
 
@@ -487,6 +491,7 @@ void updateStateCenter() {
 
           gameState=WIN;
           setValueSentOnAllFaces( SHOW_WIN );    // A spectacular flurish
+          winCount++;
 
         } else {
           // Next round
@@ -563,7 +568,7 @@ void updateStateCenter() {
 
           // listen for an reset with a single button pressed
           if(buttonPressed()) {
-            resetGameBecomeCenter();
+            resetGameBecomeCenter(0);
           }
         }
       }
@@ -571,9 +576,12 @@ void updateStateCenter() {
     } return;
 
     case WIN: {
-      // They deserve a nice rainbox.
-      // Exits when user triple clicks a center to start new game
-
+      // listen for an reset with a single button pressed, and reset with new special mode
+      if(buttonPressed()) {
+        resetGameBecomeCenter(winCount);
+      }
+      // Or exits when user triple clicks a center to reset and start new game
+      
       showWinAnimation();
     } return;
   }
@@ -710,8 +718,17 @@ struct puzzle_t {
     const level_t &level = levels[newLevelIndex];
 
     // Save these, we might need them again
-    type = level.type;
-    difficulty = level.difficulty;
+    if(winCount == 0) {
+      type = level.type;
+      difficulty = level.difficulty;
+    }
+    else if (winCount == 1) {
+      type = random(3); // returns one of the 4 puzzle types randomly (˵╹◡╹)━☆
+    }
+    else {
+      type = random(3); // returns one of the 4 puzzle types randomly
+      difficulty = 4;   // puts the difficulty at the highest level the entire time ( •̀ᴗ•́ )و ̑̑
+    }
 
 
 
@@ -740,7 +757,6 @@ struct puzzle_t {
   }
 
   void show(byte centerFace, bool changed) {       // Show the puzzle on our pixels. if changed==true, the then alternate version is shown
-
 
     switch (type) {
 
@@ -911,6 +927,16 @@ bool updateStatePetalOnFace(byte f) {
     switch (messageFromCenter) {
 
       case SHOW_RESET:        // Starts a new game.
+
+        // Note there is logic that is special cased in loop() since it changes global state.
+
+        // The center does not transition from RESET to BLOOM until it sees that all petals are READY, so we set our color
+        // to GREEN here seince we don't know how long we might have to wait.
+        setColor( GREEN );    // Smooth visual transition into bloom which should come next.
+
+        return true;
+
+      case SHOW_RESET_SPECIAL:        // Starts a new game.
 
         // Note there is logic that is special cased in loop() since it changes global state.
 
@@ -1121,12 +1147,19 @@ bool updateStatePetal() {
 // 1. This is the center of a 7 tile formation and user long presses (manual start)
 // 2. This is the center of a 7 tile formation and none of the tiles are currently a center (autostart)
 
-void resetGameBecomeCenter() {
+void resetGameBecomeCenter(byte numWins) {
   weAreCenter=true;
   gameState=RESET;
   currentLevel=0;
   setColor(OFF);
-  setValueSentOnAllFaces( SHOW_RESET );   // Reset all petals to level 0
+  if(numWins > 0) {
+    setValueSentOnAllFaces( SHOW_RESET_SPECIAL );   // Reset all petals to level 0, Win Count to 1  
+    winCount=numWins;  
+  }
+  else {
+    setValueSentOnAllFaces( SHOW_RESET );   // Reset all petals to level 0
+    winCount=numWins;
+  }
   buttonPressed();    // Clear any pending button presses so we can detect the press to start the game from BLOOM state
 }
 
@@ -1138,7 +1171,7 @@ void loop() {
   // unconditionally, even if we are currently a center.
 
   FOREACH_FACE(f) {
-    if ( !isValueReceivedOnFaceExpired(f) && getLastValueReceivedOnFace(f) == SHOW_RESET) {
+    if ( !isValueReceivedOnFaceExpired(f) && (getLastValueReceivedOnFace(f) == SHOW_RESET || getLastValueReceivedOnFace(f) == SHOW_RESET_SPECIAL)) {
       // Reset game as petal. Note this will be repeated as long as RESET is in process, but it is idempotent
       weAreCenter=false;
       setValueSentOnAllFaces(SIGNAL_IDLE);
@@ -1147,6 +1180,12 @@ void loop() {
       currentLevel=0;
       scoreboard_cycle=0;
       scoreboard_count_prev=0;
+      if( getLastValueReceivedOnFace(f) == SHOW_RESET ) {
+        winCount=0;
+      }
+      else {
+        winCount=1;
+      }
     }
   }
 
@@ -1155,8 +1194,15 @@ void loop() {
   // We are not center but we found ourselves with 6 neighboors (autostart)
 
   if ( (buttonMultiClicked() || !weAreCenter) && doWeHave6Neighboors() ) {
-    // Manual game reset where we have 6 neighboors and user longpresses
-    resetGameBecomeCenter();
+
+    if(buttonClickCount() != 4) {
+      // Manual game reset where we have 6 neighboors and user longpresses
+      resetGameBecomeCenter(0);
+    }
+    else {
+      // special reset to randomized level types
+      resetGameBecomeCenter(1);
+    }
     return;
   }
 
