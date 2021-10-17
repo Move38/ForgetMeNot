@@ -412,6 +412,9 @@ void updateStateCenter() {
         gameState=HIDE;
         stateTimer.set( getHideDuration(currentLevel) );
       }
+
+      buttonPressed();    // Clear any pending button presses so we can detect the press when the piece returns
+      
     } return;
 
 
@@ -435,6 +438,9 @@ void updateStateCenter() {
         setColor(YELLOW);
         gameState=CHANGED;
       }
+
+      buttonPressed();    // Clear any pending button presses so we can detect the press when the piece returns
+
     } return;
 
    case CHANGED: {
@@ -462,6 +468,9 @@ void updateStateCenter() {
           }
         }
       }
+
+      buttonPressed();    // Clear any pending button presses so we can detect the press when the piece returns
+
     } return;
 
     case CORRECT: {
@@ -487,6 +496,8 @@ void updateStateCenter() {
         }
       }
 
+      buttonPressed();    // Clear any pending button presses so we can detect the press when the piece returns
+
     } return;
 
     case ANSWER: {
@@ -503,6 +514,8 @@ void updateStateCenter() {
         setValueSentOnAllFaces( SHOW_SCORE_0 );
         stateTimer.set( SCORE_START_TIME_MS );
       }
+
+      buttonPressed();    // Clear any pending button presses so we can detect the press when the piece returns
 
     } return;
 
