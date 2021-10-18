@@ -301,7 +301,7 @@ word getHideDuration(byte level) {
   }
 }
 
-boolean doWeHave6Neighboors() {
+bool doWeHave6Neighboors() {
   FOREACH_FACE(f) {
     if (isValueReceivedOnFaceExpired(f)) {
       return false;
@@ -654,6 +654,10 @@ byte nextFaceClockwise( byte f ) {
   return normalizeFace( f+1 );
 }
 
+byte nextFaceCounterClockwise( byte f ) {
+  return normalizeFace( f + FACE_COUNT - 1 );
+}
+
 // Find opostie face
 byte opositeFace( byte f ) {
   return normalizeFace( f + (FACE_COUNT/2) );
@@ -701,10 +705,11 @@ struct puzzle_t {
 
     struct {
       byte face;              // Which face it lit
+      bool isCW;              // Which direction will it travel if it changes
     } direction;
 
     struct {
-      boolean clockwise;
+      bool clockwise;
     } rotation;
 
   } data;
@@ -741,6 +746,7 @@ struct puzzle_t {
 
       case DIRECTION:     // Each petal is lit a single direction
         data.direction.face = random( FACE_COUNT -1 );
+        data.direction.isCW = (random(1)==0);
         break;
 
       case DICHROMIC:     // Each petal is a pair of colors
@@ -776,9 +782,19 @@ struct puzzle_t {
         byte showDirectionFace=data.direction.face;
 
         if (changed) {
-          // make the direction point the other way
-          // TODO: Should there also be other ways it can pint at harder levels?
-          showDirectionFace = opositeFace( showDirectionFace );
+          // make the direction point another way
+          byte offset = difficulty > 3 ? 3 : difficulty;
+          
+          // rotates the changed one more subtly with higher difficulty
+          while(offset < 4) {
+            if( data.direction.isCW ) {
+              showDirectionFace = nextFaceClockwise( showDirectionFace );
+            }
+            else {
+              showDirectionFace = nextFaceCounterClockwise( showDirectionFace );
+            }
+            offset++;
+          }
         }
 
         setColor(OFF);
