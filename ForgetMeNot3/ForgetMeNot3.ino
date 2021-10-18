@@ -1211,7 +1211,7 @@ void loop() {
 
   if ( (buttonMultiClicked() || !weAreCenter) && doWeHave6Neighboors() ) {
 
-    if(buttonClickCount() != 4) {
+    if(buttonClickCount() != 5) { // 5 presses is difficult to do by accident :)
       // Manual game reset where we have 6 neighboors and user longpresses
       resetGameBecomeCenter(0);
     }
