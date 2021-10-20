@@ -310,16 +310,6 @@ bool doWeHave6Neighboors() {
   return true;
 }
 
-
-void showWinAnimation() {
-
-    setColor( GREEN );
-    // They got it right, I think they deserve little excitment with some fading sparkles
-    setColorOnFace( WHITE , random( FACE_COUNT -1 ) );
-    //uint32_t m = millis();
-    //setColor( makeColorHSB( ( m >> 6 ) & 0xff , 0xff , m & 0xff ) );     // TODO: After 72 levels, we owe them better than this crappy rainbow.
-}
-
 // Current game state (only valid if weAreCenterFlag==true)
 gameState_t gameState;
 
@@ -582,7 +572,7 @@ void updateStateCenter() {
       }
       // Or exits when user triple clicks a center to reset and start new game
       
-      showWinAnimation();
+      showWinAnimation(0);
     } return;
   }
 }
@@ -1111,7 +1101,7 @@ bool updateStatePetalOnFace(byte f) {
         return true;
 
       case SHOW_WIN:            // Show a pretty winning flurish.
-        showWinAnimation();
+        showWinAnimation(centerFace);
         return true;
 
     }
@@ -1159,6 +1149,60 @@ bool updateStatePetal() {
   return false;
 }
 
+/*
+ * WIN CONDITION ANIMATION
+ */
+#define WIN_ANIMATION_DURATION 2000
+byte winColorIndex;
+
+void showWinAnimation(byte center) {
+
+  //Let's animate something special here
+  if(stateTimer.progress() == 255) {
+    stateTimer.set(WIN_ANIMATION_DURATION);
+    winColorIndex = normalizeFace( winColorIndex + 1 );
+  }
+  
+  if( doWeHave6Neighboors() ) {
+    setColor(petalColors[winColorIndex]);  //dim(, 255 - stateTimer.progress()));
+  }
+  else {
+    // animate the petals
+    // pick a color and explode in a spiral with hue shift
+    FOREACH_FACE(f) {
+      byte offsetFace = normalizeFace(center + f);
+      
+      byte bri;
+      bri = getBrightnessCurveFromProgress(stateTimer.progress(), (f <= 3 ? f : FACE_COUNT-f ) * 20);  
+
+      setColorOnFace(dim(petalColors[winColorIndex],bri), offsetFace);
+    }
+  }
+}
+
+#define PETAL_SEGMENT_PEAK      20
+#define PETAL_SEGMENT_DURATION  195
+
+byte getBrightnessCurveFromProgress(byte progress, byte start) {
+  if(progress <= start || progress >= start + PETAL_SEGMENT_DURATION) {
+    return 0;
+  }
+  else {
+    if( (progress - start) < PETAL_SEGMENT_PEAK ) {
+      // this is the light getting brighter
+//      return 255 * (progress - start) / (PETAL_SEGMENT_PEAK);
+      return 12 * (progress - start);
+    }
+    else {
+      // this is the fall off, light getting dimmer
+//      return 255 - (255 * (progress - start - PETAL_SEGMENT_PEAK) / (PETAL_SEGMENT_DURATION - PETAL_SEGMENT_PEAK));
+      return 255 - (3 * (progress - start - PETAL_SEGMENT_PEAK) / 2);
+    }
+  }
+}
+
+#define START_LEVEL 0
+
 // This can happen in two cases:
 // 1. This is the center of a 7 tile formation and user long presses (manual start)
 // 2. This is the center of a 7 tile formation and none of the tiles are currently a center (autostart)
@@ -1166,7 +1210,8 @@ bool updateStatePetal() {
 void resetGameBecomeCenter(byte numWins) {
   weAreCenter=true;
   gameState=RESET;
-  currentLevel=0;
+  currentLevel=START_LEVEL;
+  winColorIndex = 0;
   setColor(OFF);
   if(numWins > 0) {
     setValueSentOnAllFaces( SHOW_RESET_SPECIAL );   // Reset all petals to level 0, Win Count to 1  
@@ -1193,9 +1238,10 @@ void loop() {
       setValueSentOnAllFaces(SIGNAL_IDLE);
       centerFace=f;
       setValueSentOnFace( SIGNAL_READY , centerFace );
-      currentLevel=0;
+      currentLevel=START_LEVEL;
       scoreboard_cycle=0;
       scoreboard_count_prev=0;
+      winColorIndex = 0;
       if( getLastValueReceivedOnFace(f) == SHOW_RESET ) {
         winCount=0;
       }
