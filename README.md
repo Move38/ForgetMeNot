@@ -1,4 +1,5 @@
-# ForgetmeNot
+# Forget-me-not
+#### by Jeph Stahl
 
 ## Rules
 
