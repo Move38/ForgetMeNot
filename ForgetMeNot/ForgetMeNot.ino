@@ -1,3 +1,20 @@
+/*
+   Forget-me-not
+   by Jeph Stahl
+
+   design by: Jeph Stahl
+   development by: Josh Levine, Jonathan Bobrow, Daniel King, Jude Pinto
+
+   Surround 1 Blink by 6 and click the center to begin.
+   Each surrounding piece, or petal, will show a trait.
+   Then disappear.
+   Then reappear.
+   One will be different, click the one you think is different.
+   There are 72 levels to clear. Miss one and you are back to the beginning.
+   
+   Triple-click the center piece to reset.
+
+*/
 
 enum puzzleType_t {
   COLOR,        // Each petal is a single color
